@@ -7,6 +7,7 @@ import numpy as np
 import random
 from tqdm import trange
 
+
 from utils.distribute import uniform_distribute, train_dg_split
 from utils.sampling import iid, noniid
 from utils.options import args_parser
@@ -15,7 +16,16 @@ from src.nets import MLP, CNN_v1, CNN_v2
 from src.strategy import FedAvg
 from src.test import test_img
 
+import csv
+import datetime
+import time
+import pickle
+from torchvision.models import resnet50, resnet18, resnet34
+
+
 writer = SummaryWriter()
+rows_to_write = []
+weights_to_write = []
 
 if __name__ == '__main__':
     # parse args
@@ -93,6 +103,12 @@ if __name__ == '__main__':
         for x in img_size:
             len_in *= x
         net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
+    elif args.model == 'resnet18':
+        net_glob = resnet18().to(args.device)
+    elif args.model == 'resnet34':
+        net_glob == resnet34().to(args.device)
+    elif args.model == 'resnet50':
+        net_glob = resnet50().to(args.device)
     else:
         exit('Error: unrecognized model')
 
@@ -113,6 +129,8 @@ if __name__ == '__main__':
 
     # distribute globally shared data (uniform distribution)
     share_idx = uniform_distribute(dg, args)
+
+    weights_to_write.append(w_glob.copy())
 
     for iter in trange(args.rounds):
 
@@ -147,10 +165,25 @@ if __name__ == '__main__':
             print(f"Round: {iter}")
             print(f"Test accuracy: {acc_test}")
             print(f"Test loss: {loss_test}")
+        row_to_write = [iter, acc_test, loss_test]
+        rows_to_write.append(row_to_write)
+        weights_to_write.append(w_glob.copy())
+
+
 
         # tensorboard
         if args.tsboard:
             writer.add_scalar(f"Test accuracy:Share{args.dataset}, {args.fed}", acc_test, iter)
             writer.add_scalar(f"Test loss:Share{args.dataset}, {args.fed}", loss_test, iter)
+
+    now = datetime.datetime.now()
+    now_ts = int(time.mktime(now.timetuple())) % 100000
+    filename = "logs-"+str(now_ts)+".csv"
+    with open(filename, "w") as csvfile:
+      csvwriter = csv.writer(csvfile)
+      csvwriter.writerows(rows_to_write)
+    pkl_filename = "weights-"+str(now_ts)+".pkl"
+    with open(pkl_filename, "wb") as f:
+      pickle.dump(weights_to_write, f)
 
     writer.close()
