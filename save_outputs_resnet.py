@@ -21,11 +21,16 @@ import datetime
 import time
 import pickle
 from torchvision.models import resnet50, resnet18, resnet34
+import torch.nn as nn
 
 
 writer = SummaryWriter()
 rows_to_write = []
 weights_to_write = []
+now = datetime.datetime.now()
+now_ts = int(time.mktime(now.timetuple())) % 100000
+time_baseline = time.time()
+
 
 if __name__ == '__main__':
     # parse args
@@ -105,10 +110,13 @@ if __name__ == '__main__':
         net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
     elif args.model == 'resnet18':
         net_glob = resnet18().to(args.device)
+        net_glob.fc = nn.Linear(512, 10)
     elif args.model == 'resnet34':
         net_glob == resnet34().to(args.device)
+        net_glob.fc = nn.Linear(512, 10)
     elif args.model == 'resnet50':
         net_glob = resnet50().to(args.device)
+        net_glob.fc = nn.Linear(512, 10)
     else:
         exit('Error: unrecognized model')
 
@@ -130,7 +138,15 @@ if __name__ == '__main__':
     # distribute globally shared data (uniform distribution)
     share_idx = uniform_distribute(dg, args)
 
+
+    row_to_write = [-1, -1, -1, time.time() - time_baseline]
+    time_baseline = time.time()
+    rows_to_write.append(row_to_write)
     weights_to_write.append(w_glob.copy())
+    filename = "logs-"+str(now_ts)+".csv"
+    with open(filename, "a") as csvfile:
+      csvwriter = csv.writer(csvfile)
+      csvwriter.writerow(row_to_write)
 
     for iter in trange(args.rounds):
 
@@ -165,9 +181,18 @@ if __name__ == '__main__':
             print(f"Round: {iter}")
             print(f"Test accuracy: {acc_test}")
             print(f"Test loss: {loss_test}")
-        row_to_write = [iter, acc_test, loss_test]
+        row_to_write = [iter, acc_test, loss_test, time.time() - time_baseline]
+        time_baseline = time.time()
         rows_to_write.append(row_to_write)
         weights_to_write.append(w_glob.copy())
+
+        filename = "logs-"+str(now_ts)+".csv"
+        with open(filename, "a") as csvfile:
+          csvwriter = csv.writer(csvfile)
+          csvwriter.writerow(row_to_write)
+        pkl_filename = "weights-"+str(now_ts)+".pkl"
+        with open(pkl_filename, "wb") as f:
+          pickle.dump(weights_to_write, f)
 
 
 
@@ -176,14 +201,5 @@ if __name__ == '__main__':
             writer.add_scalar(f"Test accuracy:Share{args.dataset}, {args.fed}", acc_test, iter)
             writer.add_scalar(f"Test loss:Share{args.dataset}, {args.fed}", loss_test, iter)
 
-    now = datetime.datetime.now()
-    now_ts = int(time.mktime(now.timetuple())) % 100000
-    filename = "logs-"+str(now_ts)+".csv"
-    with open(filename, "w") as csvfile:
-      csvwriter = csv.writer(csvfile)
-      csvwriter.writerows(rows_to_write)
-    pkl_filename = "weights-"+str(now_ts)+".pkl"
-    with open(pkl_filename, "wb") as f:
-      pickle.dump(weights_to_write, f)
 
     writer.close()

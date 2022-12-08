@@ -20,7 +20,9 @@ python save_outputs.py
     --dataset cifar \
     --rounds 10
 
-python save_outputs.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling noniid --sys_homo --num_channels 3 --dataset cifar --rounds 10
+python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling noniid --sys_homo --num_channels 3 --dataset cifar --rounds 10
+python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling noniid --sys_homo --num_channels 3 --dataset cifar --rounds 2 --num_users 10
 
-python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling iid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --rounds 200
-python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling noniid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --rounds 200
+python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling iid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --num_users 1 --rounds 1 --local_ep 1
+python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling iid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --num_users 10 --rounds 200
+python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling noniid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --num_users 10 --rounds 200
