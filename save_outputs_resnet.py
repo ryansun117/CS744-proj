@@ -112,11 +112,11 @@ if __name__ == '__main__':
         net_glob = resnet18().to(args.device)
         net_glob.fc = nn.Linear(512, 10)
     elif args.model == 'resnet34':
-        net_glob == resnet34().to(args.device)
+        net_glob = resnet34().to(args.device)
         net_glob.fc = nn.Linear(512, 10)
     elif args.model == 'resnet50':
         net_glob = resnet50().to(args.device)
-        net_glob.fc = nn.Linear(512, 10)
+        net_glob.fc = nn.Linear(2048, 10)
     else:
         exit('Error: unrecognized model')
 
