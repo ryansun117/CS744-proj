@@ -147,7 +147,8 @@ if __name__ == '__main__':
     with open(filename, "a") as csvfile:
       csvwriter = csv.writer(csvfile)
       csvwriter.writerow(row_to_write)
-
+    
+    weights_counter = 0
     for iter in trange(args.rounds):
 
         if not args.all_clients:
@@ -181,20 +182,23 @@ if __name__ == '__main__':
             print(f"Round: {iter}")
             print(f"Test accuracy: {acc_test}")
             print(f"Test loss: {loss_test}")
-        row_to_write = [iter, acc_test, loss_test, time.time() - time_baseline]
+        
+        # save half the weights to reduce output size
+        if iter % 2 == 0:
+            weights_counter += 1
+            weights_to_write.append(w_glob.copy())
+            pkl_filename = "weights-"+str(now_ts)+".pkl"
+            with open(pkl_filename, "wb") as f:
+              pickle.dump(weights_to_write, f)
+            
+        row_to_write = [iter, acc_test, loss_test, time.time() - time_baseline, weights_counter]
         time_baseline = time.time()
         rows_to_write.append(row_to_write)
-        weights_to_write.append(w_glob.copy())
-
+        
         filename = "logs-"+str(now_ts)+".csv"
         with open(filename, "a") as csvfile:
           csvwriter = csv.writer(csvfile)
           csvwriter.writerow(row_to_write)
-        pkl_filename = "weights-"+str(now_ts)+".pkl"
-        with open(pkl_filename, "wb") as f:
-          pickle.dump(weights_to_write, f)
-
-
 
         # tensorboard
         if args.tsboard:
