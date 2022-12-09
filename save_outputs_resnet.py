@@ -183,8 +183,8 @@ if __name__ == '__main__':
             print(f"Test accuracy: {acc_test}")
             print(f"Test loss: {loss_test}")
         
-        # save half the weights to reduce output size
-        if iter % 2 == 0:
+        # save 1/5 of the weights to reduce output size
+        if iter % 5 == 0:
             weights_counter += 1
             weights_to_write.append(w_glob.copy())
             pkl_filename = "weights-"+str(now_ts)+".pkl"
