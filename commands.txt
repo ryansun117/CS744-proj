@@ -26,3 +26,6 @@ python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sam
 python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling iid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --num_users 1 --rounds 1 --local_ep 1
 python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling iid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --num_users 10 --local_ep 3 --rounds 50
 python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling noniid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --num_users 10 --rounds 200
+
+python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling iid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --num_users 1 --rounds 1 --local_ep 5 --local_bs 200
+python save_outputs_resnet.py --all_clients --fed fedavg --gpu 0  --seed 1 --sampling iid --sys_homo --num_channels 3 --dataset cifar --model resnet18 --num_users 1 --rounds 200 --local_ep 5 --local_bs 200
