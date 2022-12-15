@@ -109,8 +109,10 @@ if __name__ == '__main__':
             len_in *= x
         net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
     elif args.model == 'resnet18':
-        net_glob = resnet18().to(args.device)
-        net_glob.fc = nn.Linear(512, 10)
+        net_glob = resnet18(pretrained=False, num_classes=10)
+        if args.dataset == 'mnist':
+            net_glob.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+        net_glob = net_glob.to(args.device)
     elif args.model == 'resnet34':
         net_glob = resnet34().to(args.device)
         net_glob.fc = nn.Linear(512, 10)
