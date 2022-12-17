@@ -26,7 +26,7 @@ def accuracy(outputs, labels):
 def get_default_device():
   """Pick GPU if available, else CPU"""
   if torch.cuda.is_available():
-      return torch.device('cuda')
+      return torch.device('cuda:1')
   else:
       return torch.device('cpu')
 
@@ -476,8 +476,8 @@ if __name__ == "__main__":
   # valid_dl = DataLoader(valid_ds, batch_size*2, num_workers=3, pin_memory=True)
   n_samples_train = 2000
   n_samples_test = 1000
-  train_dls=iid_split(train_ds, 10, n_samples_train, batch_size, shuffle=True)
-  valid_dls=iid_split(valid_ds, 10, n_samples_test, batch_size*2, shuffle=False)
+  train_dls=non_iid_split(train_ds, 10, n_samples_train, batch_size, shuffle=True)
+  valid_dls=non_iid_split(valid_ds, 10, n_samples_test, batch_size*2, shuffle=False)
 
 
 
@@ -518,4 +518,4 @@ if __name__ == "__main__":
     )
     data_to_save = np.array([server_losses, server_accs, loss_hist_FA_iid, acc_hist_FA_iid]).T
     df = pd.DataFrame(data_to_save, columns=["glob_loss", "glob_acc", "local_loss", "local_acc"])
-    df.to_csv('iid-history-'+str(idx)+'.csv')
+    df.to_csv('noniid-history-'+str(idx)+'.csv')
