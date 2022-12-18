@@ -304,6 +304,7 @@ def loss_dataset(model, dataset, loss_f):
 
         del features
         del labels
+        del predictions
 
     loss/=idx+1
     return loss
@@ -331,6 +332,7 @@ def accuracy_dataset(model, dataset):
 
         del features
         del labels
+        del predictions
 
     accuracy = 100*correct/num_data
 
@@ -368,6 +370,7 @@ def train_step(model, model_0, mu:int, optimizer, train_data, loss_f, sched, gra
 
         del features
         del labels
+        del predictions
 
     return total_loss/(idx+1)
 

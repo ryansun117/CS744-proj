@@ -166,6 +166,7 @@ def average_models(model, clients_models_hist:list , weights:list):
     clients"""
 
     new_model=deepcopy(model)
+    new_model=new_model.to('cpu')
     set_to_zero_model_weights(new_model)
 
     for k,client_hist in enumerate(clients_models_hist):
@@ -173,8 +174,10 @@ def average_models(model, clients_models_hist:list , weights:list):
         for idx, layer_weights in enumerate(new_model.parameters()):
 
             contribution=client_hist[idx].data*weights[k]
+            # contribution = contribution.to(device)
             layer_weights.data.add_(contribution)
 
+    new_model=new_model.to(device)
     return new_model
 
 def FedProx(model, training_sets:list, n_iter:int, testing_sets:list, opt_func, mu=0,
@@ -247,10 +250,11 @@ def FedProx(model, training_sets:list, n_iter:int, testing_sets:list, opt_func, 
 
             #GET THE PARAMETER TENSORS OF THE MODEL
             list_params=list(local_model.parameters())
-            list_params=[tens_param.detach() for tens_param in list_params]
+            list_params=[tens_param.detach().cpu() for tens_param in list_params]
             clients_params.append(list_params)
             # clients_models.append(deepcopy(local_model))
             del local_model
+            del list_params
 
 
         #CREATE THE NEW GLOBAL MODEL
@@ -304,6 +308,7 @@ def loss_dataset(model, dataset, loss_f):
 
         del features
         del labels
+        del predictions
 
     loss/=idx+1
     return loss
@@ -331,6 +336,7 @@ def accuracy_dataset(model, dataset):
 
         del features
         del labels
+        del predictions
 
     accuracy = 100*correct/num_data
 
@@ -368,6 +374,7 @@ def train_step(model, model_0, mu:int, optimizer, train_data, loss_f, sched, gra
 
         del features
         del labels
+        del predictions
 
     return total_loss/(idx+1)
 
@@ -476,8 +483,9 @@ if __name__ == "__main__":
   # valid_dl = DataLoader(valid_ds, batch_size*2, num_workers=3, pin_memory=True)
   n_samples_train = 2000
   n_samples_test = 1000
-  train_dls=iid_split(train_ds, 10, n_samples_train, batch_size, shuffle=True)
-  valid_dls=iid_split(valid_ds, 10, n_samples_test, batch_size*2, shuffle=False)
+  num_nodes = 1
+  train_dls=iid_split(train_ds, num_nodes, n_samples_train, batch_size, shuffle=True)
+  valid_dls=iid_split(valid_ds, num_nodes, n_samples_test, batch_size*2, shuffle=False)
 
 
 
@@ -502,7 +510,8 @@ if __name__ == "__main__":
   n_iter = 200 # comm rounds
   mu = 0 # 0 for fedavg
 
-  for idx in range(len(all_models)):
+  for idx in range(13, len(all_models)):
+    print("running model idx:", idx)
     # all_models[idx]
     # all_history[idx] += fit_one_cycle(epochs, max_lr, all_models[idx], train_dl, valid_dl,
     #                          grad_clip=grad_clip,
